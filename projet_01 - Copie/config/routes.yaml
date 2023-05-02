@@ -1,0 +1,23 @@
+controllers:
+    resource: ../src/Controller/
+    type: attribute
+
+administrateur_create:
+    path: /administrateur/create
+    controller: App\Controller\AdministrateurController::create
+    methods: [POST]
+
+administrateur_modify:
+    path: /administrateur/modify
+    controller: App\Controller\AdministrateurController::modify
+    methods: [POST]
+
+administrateur_gestion:
+    path: /administrateur/gestion
+    controller: App\Controller\AdministrateurController::gestion
+    methods: [GET]
+
+administrateur_creationUtilisateur:
+    path: /administrateur/gestion
+    controller: App\Controller\AdministrateurController::gestion
+    methods: [POST]

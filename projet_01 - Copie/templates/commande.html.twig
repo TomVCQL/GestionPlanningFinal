@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block body%}
+<h1>Vous pouvez choisir les {{ types | length }} différents types de commandes:</h1>
+{% for type in types %}
+    <button><a style="text-decoration: none; color: black" href="/commandes/{{type}}">{{ type  }}</a></button>
+{% endfor %}
+{% endblock %}

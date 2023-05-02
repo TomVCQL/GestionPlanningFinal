@@ -1,0 +1,341 @@
+{% extends 'base.html.twig' %}
+{% block title%}
+    Accueil
+{% endblock %}
+
+{% block body%}
+    <CENTER><h1>Bienvenue sur la page administrateur {{ prenom }} {{ nom }}</h1><a href="/administrateur/gestion"><button class="btn btn-warning">Créer des utilisateurs</button></a>&nbsp;<a href="/administrateur/creationMat"><button class="btn btn-warning">Créer des matieres</button></a></CENTER>
+    <style>
+
+        .eventLigne {
+            white-space: pre-line;
+        }
+        .fc-slats > table > tbody > tr {
+            height: 35px;
+        }
+        .fc-minor {
+            height : 35px;
+        }
+    </style>
+    <div id='calendar' style="width: 100%;"></div>
+    <div id="form_div" style="display:none; position:absolute; top:0; left:0; z-index:2; background-color:white;">
+            <form id="event_form">
+                <div>
+                    <label>Type de période:</label>
+                    <input type="radio" id="type_periode" name="type_periode" value="cours" checked>Cours
+                    <input type="radio" id="type_periode" name="type_periode" value="Entreprise">Entreprise
+                    <input type="radio" id="type_periode" name="type_periode" value="Supprimer">Supprimer
+                </div>
+                <div id="matiere_div">
+                    <label>Matière:</label>
+                    <select id="matiere" name="matiere">
+                        {%for mat in matieres %}
+                            <option value="{{ mat.id }}">{{ mat.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Sélectionnez une heure:</label>
+                    <div>
+                        <label>Heure de début:</label>
+                        <input type="text" id="start" name="start">
+                    </div>
+                    <div>
+                        <label>Heure de fin:</label>
+                        <input type="text" id="end" name="end">
+                    </div>
+                </div>
+                <button type="submit">Envoyer</button>
+            </form>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+
+    <script src='http://fullcalendar.io/js/fullcalendar-2.1.1/lib/moment.min.js'></script>
+    <script src='http://fullcalendar.io/js/fullcalendar-2.1.1/lib/jquery.min.js'></script>
+    <script src="http://fullcalendar.io/js/fullcalendar-2.1.1/lib/jquery-ui.custom.min.js"></script>
+    <script src='http://fullcalendar.io/js/fullcalendar-2.1.1/fullcalendar.min.js'></script>
+
+{#    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.6/index.global.min.js'></script>#}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>#}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css">
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function() {
+
+            // Affiche ou masque les champs "matiere" et "intervenant" en fonction de la sélection du bouton radio "type_periode"
+            const matiereDiv = $("#matiere_div");
+            var type_periode = $("#type_periode").val();
+
+            const typePeriodeRadios = $("[name='type_periode']");
+            typePeriodeRadios.change(function() {
+                if ($(this).val() === "cours") {
+                    matiereDiv.show();
+                    type_periode = "cours";
+                } else if($(this).val() === "Entreprise"){
+                    matiereDiv.hide();
+                    type_periode = "Entreprise";
+                }
+                else if($(this).val() === "Supprimer")
+                {
+                    type_periode = "Supprimer";
+                }
+            });
+
+            const formDiv = document.getElementById("form_div");
+            const eventForm = document.getElementById("event_form");
+
+            // Initialisation du calendrier
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                defaultView: 'agendaWeek',
+                slotDuration: '00:30:00',
+                selectable: true,
+                height:'auto',
+                allDaySlot: false,
+                minTime: '08:00:00',
+                maxTime: '19:00:00',
+                unselectAuto: true,
+                selectOverlap:false,
+                eventClick: function(calEvent, jsEvent, view) {
+                    // Récupérer les informations de l'événement cliqué
+                    var eventId = calEvent.id;
+                    var title = calEvent.title;
+                    var start = calEvent.start.format('YYYY-MM-DD HH:mm:ss');
+                    var end = calEvent.end ? calEvent.end.format('YYYY-MM-DD HH:mm:ss') : '';
+
+                    // Afficher le formulaire de modification
+                    $('#form_div').show();
+
+                    // // Positionne le formulaire à côté de la plage horaire sélectionnée
+                    var form = document.getElementById("form_div");
+                    var x = jsEvent.pageX;
+                    var y = jsEvent.pageY;
+
+                    $(form).css({
+                        top: y + 5,
+                        left: x + 5,
+                        position: 'absolute'
+                    });
+
+                    var form = $('#event_form');
+                    var entrepriseRadio = form.find('input[value="Entreprise"]');
+                    var coursRadio = form.find('input[value="cours"]');
+                    var supprimerRadio =  form.find('input[value="Supprimer"]');
+
+                    if(title === "ENTREPRISE") {
+                        entrepriseRadio.prop('checked', true);
+                        matiereDiv.hide();
+                        type_periode = "Entreprise";
+
+                    } else {
+                        entrepriseRadio.prop('checked', false);
+                        coursRadio.prop('checked', true);
+                        matiereDiv.show();
+                        type_periode = "cours";
+                    }
+
+                    $("#start").val(start);
+                    $("#end").val(end);
+                    console.log(title);
+
+                    $('#event_form').submit(function(event) {
+                        event.preventDefault();
+                        var matiere = $("#matiere").val();
+                        var startInput = $("#start").val();
+                        var endInput = $("#end").val();
+                        var type_periode = $('input[name="type_periode"]:checked').val();
+
+                        $.ajax({
+                            url: '/administrateur/modify',
+                            type: 'POST',
+                            data :{
+                                'dateDebut': startInput,
+                                'dateFin': endInput,
+                                'type_periode': type_periode,
+                                'matiere': matiere,
+                                'id': eventId,
+                            },
+                            success: function(response) {
+                                $('#calendar').fullCalendar('refetchEvents');
+                                $('#form_div').hide();
+                                location.reload();
+                            }
+                        });
+                        });
+
+                },
+                events: {{ events|json_encode|raw }},
+                select: function(start, end,jsEvent, view) {
+
+                    var data = {
+                        title: '',
+                        start: start,
+                        end: end
+                    };
+
+                    // // Positionne le formulaire à côté de la plage horaire sélectionnée
+                    var form = document.getElementById("form_div");
+                    var x = jsEvent.pageX;
+                    var y = jsEvent.pageY;
+                    console.log("mise en position");
+                    $(form).css({
+                        top: y + 5,
+                        left: x + 5,
+                        position: 'absolute'
+                    });
+
+                    // Remplir les inputs des heures avec la plage horaire sélectionnée
+                    const startFormatted = start.toISOString().replace('T', ' ');
+                    const endFormatted = end.toISOString().replace('T', ' ');
+
+                    $("#start").val(startFormatted);
+                    $('#end').val(endFormatted);
+
+                    var duree = endFormatted-startFormatted;
+
+                    $('#calendar').fullCalendar('renderEvent', data, true);
+                    $('#calendar').fullCalendar('unselect');
+
+                    var eventId = data._id;
+                    $('#form_div').show();
+
+                    // Lorsque le formulaire est soumis, création de l'événement
+                    $('#event_form').submit(function(event) {
+                        event.preventDefault();
+                        var matiere = $("#matiere").val();
+                        var selectMatiere = document.getElementById('matiere');
+
+
+                        var optionMatiere = selectMatiere.options[selectMatiere.selectedIndex];
+
+                        var nomMatiere = optionMatiere.text;
+
+
+                        if (type_periode == "Entreprise") {
+                            var title = "ENTREPRISE";
+                        } else {
+                            var title = type_periode;
+                        }
+
+                        var data = $('#calendar').fullCalendar('clientEvents', eventId)[0];
+                        data.title = title;
+                        $('#calendar').fullCalendar('updateEvent', data);
+
+                        $('#calendar').fullCalendar('unselect');
+                        $('#event_form')[0].reset();
+                        $('#form_div').hide();
+                        console.log(matiere);
+                    //
+                        $.ajax({
+                            url: '/administrateur/create',
+                            type: 'POST',
+                            data :{
+                                'dateDebut': startFormatted,
+                                'dateFin': endFormatted,
+                                'type_periode': type_periode,
+                                'matiere': matiere,
+                                'duree': duree
+                            },
+                            success: function(response) {
+                                $('#calendar').fullCalendar('refetchEvents');
+                                $('#form_div').hide();
+                                location.reload();
+                            }
+                        });
+                    });
+
+                },
+            });
+
+        });
+
+
+
+
+        // document.addEventListener('DOMContentLoaded', function() {
+        //
+        // const calendar = new FullCalendar.Calendar(calendarEl, {
+        //     initialView: 'timeGridWeek',
+        //     height: 'auto',
+        //     slotDuration: '00:30:00',
+        //     selectable: true,
+        //     unselectAuto:true,
+        //     selectOverlap:false,
+        //     events:[],
+        //     select: function(info){
+        //
+        //             var start = info.start;
+        //             var end = info.end;
+        //
+        //             // Positionner dynamiquement le formulaire à côté de la plage horaire sélectionnée
+        //             const formWidth = formDiv.offsetWidth;
+        //             const formHeight = formDiv.offsetHeight;
+        //             const calendarRect = calendarEl.getBoundingClientRect();
+        //             const left = calendarRect.left + (info.jsEvent.clientX - calendarRect.left - formWidth / 2);
+        //             const top = calendarRect.top + (info.jsEvent.clientY - calendarRect.top - formHeight / 2);
+        //             formDiv.style.left = left + "px";
+        //             formDiv.style.top = top + "px";
+        //
+        //             // Remplir les inputs des heures avec la plage horaire sélectionnée
+        //             var inputStart = document.getElementById("start");
+        //             var inputEnd = document.getElementById("end");
+        //             inputStart.value = moment(start).format('YYYY-MM-DD HH:mm:ss');
+        //             inputEnd.value = moment(end).format('YYYY-MM-DD HH:mm:ss');
+        //             var duree = moment(end).format('HH:mm:ss') - moment(start).format('HH:mm:ss');
+        //             formDiv.style.display = "block";
+        //
+        //             eventForm.addEventListener('submit', function (e) {
+        //                 e.preventDefault();
+        //                 var selectMatiere = document.getElementById('matiere');
+        //                 var selectIntervenant = document.getElementById('intervenant');
+        //
+        //                 var optionMatiere = selectMatiere.options[selectMatiere.selectedIndex];
+        //                 var optionIntervenant = selectIntervenant.options[selectIntervenant.selectedIndex];
+        //                 var nomMatiere = optionMatiere.text;
+        //                 var nomIntervenant = optionIntervenant.text;
+        //
+        //                 if (type_periode == "Entreprise") {
+        //                     var title = "ENTREPRISE";
+        //                 } else {
+        //                     var title = type_periode + " de " + nomIntervenant + " en " + nomMatiere;
+        //                 }
+        //                 formDiv.style.display = "none";
+        //                 eventForm.reset();
+        //                 var data = {
+        //                     'dateDebut': inputStart,
+        //                     'dateFin': inputEnd,
+        //                     'type_periode': type_periode,
+        //                     'matiere': matiere,
+        //                     'intervenant': intervenant,
+        //                     'duree': duree
+        //                 }
+        //                 $.ajax({
+        //                     type: 'POST',
+        //                     url: "/administrateur/create",
+        //                     data: data,
+        //                     success: function(data) {
+        //                         // si l'enregistrement s'est bien déroulé, ajoute l'événement au calendrier
+        //                         $('#calendar').fullCalendar('renderEvent', {
+        //                             title: title,
+        //                             start: start,
+        //                             end: end
+        //                         });
+        //                     }
+        //                 });
+        //             });
+        //         }
+        // });
+        // calendar.render();
+        // });
+    </script>
+{% endblock %}

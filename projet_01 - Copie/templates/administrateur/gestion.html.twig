@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+{% block title%}
+    Accueil
+{% endblock %}
+
+{% block body%}
+    {% for message in app.flashes('ok') %}
+        <div class="flash-notice alert alert-success" style="text-align: center;font-size: 20px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('aie') %}
+        <div class="flash-notice alert alert-danger" style="text-align: center;font-size: 20px;">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <a href="/administrateur/creationMat"><button class="btn btn-primary">Creer des matieres</button></a>
+    <a href="/administrateur/accueil"><button class="btn btn-primary">Revenir au calendrier</button></a>
+    <div style="background-color: white; width: fit-content; border-radius: 10px;padding: 10px;margin-top: 15%;margin-right: 15%;margin-left: 25%; float: left">
+        <h1>Créer un intervenant</h1>
+    {{ form_start(formIntervenant) }}
+    {{ form_label(formIntervenant.Nom_intervenant, null, {'label_attr': {'class':'form_label'}} ) }}
+    {{ form_widget(formIntervenant.Nom_intervenant ) }}
+    <br/>
+    <br>
+    {{ form_label(formIntervenant.Prenom_intervenant, null, {'label_attr': {'class':'form_label'}}) }}
+    {{ form_widget(formIntervenant.Prenom_intervenant) }}
+        <br/>
+        <br/>
+        {{ form_label(formIntervenant.Pseudo_intervenant, null, {'label_attr': {'class':'form_label'}}) }}
+        {{ form_widget(formIntervenant.Pseudo_intervenant) }}
+        <br/>
+        <br/>
+        {{ form_label(formIntervenant.Mots_de_passe_intervenant, null, {'label_attr': {'class':'form_label'}}) }}
+        {{ form_widget(formIntervenant.Mots_de_passe_intervenant) }}
+        <br/>
+        <br/>
+        <label>Attribuer une matiere  </label>
+    <select id="matiere" name="matiere">
+    {%for mat in matieres %}
+        <option value="{{ mat.id }}">{{ mat.NomMat }}</option>
+    {% endfor %}
+    </select>
+
+    {{ form_rest(formIntervenant) }}
+    <br/>
+    <br>
+    <center><button type="submit" class="btn btn-success">Connexion</button></center>
+
+    {{ form_end(formIntervenant) }}
+    </div>
+{% endblock %}
